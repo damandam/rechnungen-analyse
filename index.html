@@ -24,14 +24,17 @@
   <input type="file" id="csvInput" accept=".csv">
   <br><br>
   <label for="searchInput"><strong>🔍 Suche nach Rechnungsnummer:</strong></label>
-  <input type="text" id="searchInput" placeholder="z. B. 678/25" oninput="filterTable()">
+  <input type="text" id="searchInput" placeholder="z.\u202fB. 678/25" oninput="filterTable()">
   <div id="output"></div>
 
   <script>
+let globalDaten = [];
+
 window.onload = function () {
   fetch("https://script.google.com/macros/s/AKfycbwWKLzNKi8MGcqph_KZ5Tty8aKwz-_gLCkD6uJ_H_U2-LETLtE-UZ2W8UE0C671foix/exec")
     .then(res => res.json())
     .then(daten => {
+      globalDaten = daten;
       console.log("📦 Alte Daten geladen:", daten);
       zeigeTabelle(daten);
     })
@@ -98,7 +101,7 @@ document.getElementById('csvInput').addEventListener('change', function(event) {
       const zweck = row[zweckIndex] || "";
 
       if (parseFloat(betrag) > 0) {
-        const sicherRegex = /\b(?:Re[-]?Nr\.?|Rech\.?Nr\.?|RG[- ]?Nr\.?|Rechnung|RE)\s*:?​\s*(\d{1,4}\/25)\b/gi;
+        const sicherRegex = /\b(?:Re[-]?Nr\.?|Rech\.?Nr\.?|RG[- ]?Nr\.?|Rechnung|RE)\s*:?[\u200b]?\s*(\d{1,4}\/25)\b/gi;
         const lockerRegex = /\b(\d{1,4}\/25)\b/g;
         let match;
 
@@ -121,15 +124,24 @@ document.getElementById('csvInput').addEventListener('change', function(event) {
     const min = Math.min(...nummern);
     const max = Math.max(...nummern);
 
-    const komplett = [];
+    const neu = [];
     for (let i = max; i >= min; i--) {
       const rnr = String(i).padStart(3, "0") + "/25";
       const status = matches.has(rnr) ? "bezahlt" : "nicht gefunden";
-      komplett.push({ rechnung: rnr, status });
+      if (!globalDaten.some(d => d.rechnung === rnr)) {
+        neu.push({ rechnung: rnr, status });
+      }
     }
 
-    zeigeTabelle(komplett);
-    speichernInGoogleSheets(komplett);
+    const jetzt = new Date().toLocaleDateString('de-DE', {
+      day: '2-digit', month: '2-digit', year: '2-digit'
+    });
+
+    const datenMitDatum = neu.map(e => ({ ...e, hochgeladen: jetzt }));
+    globalDaten = [...globalDaten, ...datenMitDatum];
+
+    zeigeTabelle(globalDaten);
+    speichernInGoogleSheets(datenMitDatum);
     document.getElementById("searchInput").value = "";
     filterTable();
   };
@@ -147,14 +159,7 @@ function speichernInGoogleSheets(rechnungen) {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(
-      rechnungen.map(e => ({
-        ...e,
-        hochgeladen: new Date().toLocaleDateString('de-DE', {
-          day: '2-digit', month: '2-digit', year: '2-digit'
-        })
-      }))
-    )
+    body: JSON.stringify(rechnungen)
   });
 }
   </script>
