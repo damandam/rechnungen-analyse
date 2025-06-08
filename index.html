@@ -124,6 +124,7 @@
     });
   function speichernInGoogleSheets(rechnungen) {
     const endpoint = "https://script.google.com/macros/s/AKfycbzc9IiYA3WxNsR5zAdrGloV6bn24GklBOexEX_T2dEz9-Tuedptai3Gf5nkGGOP9b9_/exec";
+console.log("✅ Daten an Google senden:", rechnungen);
 
     fetch(endpoint, {
       method: "POST",
