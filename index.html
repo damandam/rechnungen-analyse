@@ -126,19 +126,26 @@ function zeigeTabelle(daten) {
           komplett.push({ rechnung: rnr, status });
         }
   
-        // Tabelle generieren
-        let html = "<table><tr><th>Rechnungsnummer</th><th>Status</th></tr>";
-        komplett.forEach(row => {
-          html += `<tr><td>${row.rechnung}</td><td>${row.status}</td></tr>`;
-        });
-        html += "</table>";
-        document.getElementById('output').innerHTML = html;
-        speichernInGoogleSheets(komplett);
+// Tabelle generieren
+let html = "<table><tr><th>Rechnungsnummer</th><th>Status</th><th>Hochgeladen am</th></tr>";
+komplett.forEach(row => {
+  const datum = row.hochgeladen
+    ? new Date(row.hochgeladen).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit"
+      })
+    : "";
+  html += `<tr><td>${row.rechnung}</td><td>${row.status}</td><td>${datum}</td></tr>`;
+});
+html += "</table>";
+document.getElementById('output').innerHTML = html;
+speichernInGoogleSheets(komplett);
 
-        // Suche aktivieren
-        document.getElementById("searchInput").value = "";
-        filterTable();
-      };
+// Suche aktivieren
+document.getElementById("searchInput").value = "";
+filterTable();
+
   
       reader.readAsText(file, 'latin1');
     });
