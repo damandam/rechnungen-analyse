@@ -20,6 +20,20 @@
   </style>
 </head>
 <body>
+
+  <script>
+    const erlaubtesPasswort = "meinGeheimesPW"; // <- Passwort hier eintragen
+    if (prompt("🔐 Passwort eingeben:") !== erlaubtesPasswort) {
+      alert("⛔️ Zugriff verweigert!");
+      document.body.innerHTML = ""; // ganze Seite ausblenden
+    }
+  </script>
+
+  <!-- Ab hier dein normaler Inhalt -->
+  <h2>Rechnungsnummern finden (CSV)</h2>
+  <input type="file" id="csvInput" accept=".csv">
+  <!-- ... -->
+
   <h2>Rechnungsnummern finden (CSV)</h2>
   <input type="file" id="csvInput" accept=".csv">
   <br><br>
