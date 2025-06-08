@@ -145,10 +145,10 @@ speichernInGoogleSheets(komplett);
 // Suche aktivieren
 document.getElementById("searchInput").value = "";
 filterTable();
+}; // <— Nur hier darf der Block enden!
 
-  
-      reader.readAsText(file, 'latin1');
-    });
+reader.readAsText(file, 'latin1');
+
   function speichernInGoogleSheets(rechnungen) {
     const endpoint = "https://script.google.com/macros/s/AKfycbwWKLzNKi8MGcqph_KZ5Tty8aKwz-_gLCkD6uJ_H_U2-LETLtE-UZ2W8UE0C671foix/exec";
 console.log("✅ Daten an Google senden:", rechnungen);
