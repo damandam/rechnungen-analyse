@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Rechnungsnummern Finder</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px 12px;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h2>Rechnungsnummern finden (CSV)</h2>
+  <input type="file" id="csvInput" accept=".csv">
+  <br><br>
+  <label for="searchInput"><strong>🔍 Suche nach Rechnungsnummer:</strong></label>
+  <input type="text" id="searchInput" placeholder="z. B. 678/25" oninput="filterTable()">
+  <div id="output"></div>
+
+  <script>
+    function filterTable() {
+      const filter = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#output table tr");
+  
+      rows.forEach((row, index) => {
+        if (index === 0) return; // Kopfzeile immer anzeigen
+        const text = row.cells[0].textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    }
+  
+    document.getElementById('csvInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+  
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/);
+        const rows = lines.map(l => l.split(";")).filter(r => r.length > 1);
+  
+        // Richtige Kopfzeile suchen
+        let headerIndex = -1;
+        for (let i = 0; i < rows.length; i++) {
+          const line = rows[i].map(c => c.toLowerCase());
+          if (line.includes("soll") && line.includes("haben") && line.some(h => h.includes("verwendungszweck"))) {
+            headerIndex = i;
+            break;
+          }
+        }
+  
+        if (headerIndex === -1) {
+          document.getElementById('output').innerHTML = "⚠️ Spalten 'Soll', 'Haben' oder 'Verwendungszweck' nicht gefunden.";
+          return;
+        }
+  
+        const header = rows[headerIndex].map(h => h.toLowerCase());
+        const habenIndex = header.findIndex(h => h.includes("haben"));
+        const zweckIndex = header.findIndex(h => h.includes("verwendungszweck"));
+  
+        const matches = new Set();
+  
+        for (let i = headerIndex + 1; i < rows.length; i++) {
+          const row = rows[i];
+          const betrag = row[habenIndex]?.replace(",", ".").replace(/[^0-9.-]/g, "");
+          const zweck = row[zweckIndex] || "";
+  
+          if (parseFloat(betrag) > 0) {
+            const sicherRegex = /\b(?:Re[-]?Nr\.?|Rech\.?Nr\.?|RG[- ]?Nr\.?|Rechnung|RE)\s*:?\s*(\d{1,4}\/25)\b/gi;
+            const lockerRegex = /\b(\d{1,4}\/25)\b/g;
+            let match;
+  
+            while ((match = sicherRegex.exec(zweck)) !== null) {
+              matches.add(match[1].padStart(6, "0"));
+            }
+            while ((match = lockerRegex.exec(zweck)) !== null) {
+              matches.add(match[1].padStart(6, "0"));
+            }
+          }
+        }
+  
+        const gefundene = [...matches].sort().reverse();
+        if (gefundene.length === 0) {
+          document.getElementById('output').innerHTML = "<p>Keine bezahlten Rechnungen gefunden.</p>";
+          return;
+        }
+  
+        const nummern = gefundene.map(rnr => parseInt(rnr.split("/")[0], 10));
+        const min = Math.min(...nummern);
+        const max = Math.max(...nummern);
+  
+        const komplett = [];
+        for (let i = max; i >= min; i--) {
+          const rnr = String(i).padStart(3, "0") + "/25";
+          const status = matches.has(rnr) ? "bezahlt" : "nicht gefunden";
+          komplett.push({ rechnung: rnr, status });
+        }
+  
+        // Tabelle generieren
+        let html = "<table><tr><th>Rechnungsnummer</th><th>Status</th></tr>";
+        komplett.forEach(row => {
+          html += `<tr><td>${row.rechnung}</td><td>${row.status}</td></tr>`;
+        });
+        html += "</table>";
+        document.getElementById('output').innerHTML = html;
+        speichernInGoogleSheets(komplett);
+
+        // Suche aktivieren
+        document.getElementById("searchInput").value = "";
+        filterTable();
+      };
+  
+      reader.readAsText(file, 'latin1');
+    });
+    function speichernInGoogleSheets(rechnungen) {
+  const endpoint = "https://script.google.com/macros/s/AKfycbwLBvvf07ogmvDwEkT6j4Ytp20p3G9Ay4XdPrWICcmv9H1t5yBI8gud-uZ1uket9vvu/exec";
+
+  fetch(endpoint, {
+    method: "POST",
+    body: JSON.stringify(rechnungen),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  .then(response => response.text())
+  .then(msg => console.log("✅ Gespeichert in Google Sheets:", msg))
+  .catch(error => console.error("❌ Fehler beim Speichern:", error));
+}
+
+  </script>
+  
+  
+  
+  
+</body>
+
+</html>
