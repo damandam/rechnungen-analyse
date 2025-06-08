@@ -127,14 +127,15 @@
 
     fetch(endpoint, {
       method: "POST",
-      mode: "no-cors", // ← WICHTIG!
+      mode: "no-cors", // ← OHNE das blockt Google komplett
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(rechnungen)
     });
-      }
-  </script>
+  }
+</script>
+
 
 
   
