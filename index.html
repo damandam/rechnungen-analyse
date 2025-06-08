@@ -28,6 +28,26 @@
   <div id="output"></div>
 
   <script>
+window.onload = function () {
+  fetch("https://script.google.com/macros/s/DEIN-SCRIPT-ID/exec")
+    .then(res => res.json())
+    .then(daten => {
+      console.log("📦 Alte Daten geladen:", daten);
+      zeigeTabelle(daten);
+    })
+    .catch(err => console.error("Fehler beim Laden:", err));
+};
+
+// Diese Funktion nutzt du, um die Tabelle zu rendern (einfach anpassen oder deine eigene nehmen)
+function zeigeTabelle(daten) {
+  let html = "<table><tr><th>Rechnungsnummer</th><th>Status</th><th>Hochgeladen am</th></tr>";
+  daten.forEach(row => {
+    html += `<tr><td>${row.rechnung}</td><td>${row.status}</td><td>${row.hochgeladen}</td></tr>`;
+  });
+  html += "</table>";
+  document.getElementById("output").innerHTML = html;
+}
+
     function filterTable() {
       const filter = document.getElementById("searchInput").value.toLowerCase();
       const rows = document.querySelectorAll("#output table tr");
@@ -123,7 +143,7 @@
       reader.readAsText(file, 'latin1');
     });
   function speichernInGoogleSheets(rechnungen) {
-    const endpoint = "https://script.google.com/macros/s/AKfycbx1CjuJ9azfbPacY8SVZ3Q-exKGoE3cUKxcq8eU0zRoasJej6fqvnmGwMN5pRaud3gI/exec";
+    const endpoint = "https://script.google.com/macros/s/AKfycbwWKLzNKi8MGcqph_KZ5Tty8aKwz-_gLCkD6uJ_H_U2-LETLtE-UZ2W8UE0C671foix/exec";
 console.log("✅ Daten an Google senden:", rechnungen);
 
     fetch(endpoint, {
