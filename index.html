@@ -122,22 +122,18 @@
   
       reader.readAsText(file, 'latin1');
     });
-    function speichernInGoogleSheets(rechnungen) {
-const endpoint = "https://script.google.com/macros/s/AKfycbwKertD3BVMO4zS8FvIUDsrxnGfhNb3FGdfYm2KseygsJCeLwQoUGKTURzxWv1-Fa8c/exec";
+  function speichernInGoogleSheets(rechnungen) {
+    const endpoint = "https://script.google.com/macros/s/AKfycbwKertD3BVMO4zS8FvIUDsrxnGfhNb3FGdfYm2KseygsJCeLwQoUGKTURzxWv1-Fa8c/exec";
 
-  fetch(endpoint, {
-    method: "POST",
-    body: JSON.stringify(rechnungen),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  })
-  .then(response => response.text())
-  .then(msg => console.log("✅ Gespeichert in Google Sheets:", msg))
-  .catch(error => console.error("❌ Fehler beim Speichern:", error));
-}
-
-  </script>
+    fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors", // ← WICHTIG!
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(rechnungen)
+    });
+  }
   
   
   
