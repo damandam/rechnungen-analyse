@@ -152,7 +152,15 @@ console.log("✅ Daten an Google senden:", rechnungen);
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(rechnungen)
+      body: JSON.stringify(
+  rechnungen.map(e => ({
+    ...e,
+    hochgeladen: new Date().toLocaleDateString('de-DE', {
+      day: '2-digit', month: '2-digit', year: '2-digit'
+    })
+  }))
+)
+
     });
   }
 </script>
